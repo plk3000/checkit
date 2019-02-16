@@ -1,6 +1,6 @@
 {
   "name": "check-it",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "REST api for slack app to manage resources",
   "main": "index.js",
   "scripts": {
