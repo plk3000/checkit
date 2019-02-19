@@ -9,6 +9,7 @@ var express = require('express'),
 // mongoose instance connection url connection
 mongoose.Promise = global.Promise;
 mongoose.connect(`mongodb://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@ds237955.mlab.com:37955/checkit`, { useNewUrlParser: true }, null); 
+// mongoose.connect(`mongodb://localhost:27017/checkit`, { useNewUrlParser: true }, null); 
 
 
 app.use(bodyParser.urlencoded({ extended: true }));

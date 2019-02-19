@@ -9,6 +9,8 @@ var ResourceSchema = new Schema({
     required: 'Kindly enter the name of the resource',
     unique: true
   },
+  teamId: String,
+  channelId: String,
   Created_date: {
     type: Date,
     default: Date.now

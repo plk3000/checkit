@@ -15,7 +15,7 @@ exports.handleRequest = function (req, res) {
             createResource(req, res, params);
             break;
         case 'list':
-            listResources(res);
+            listResources(req, res);
             break;
         case 'out':
             checkOut(req, res, params);
@@ -29,8 +29,14 @@ exports.handleRequest = function (req, res) {
     }
 }
 
-function listResources(res) {
-    Resource.find({}, function (err, resources) {
+function listResources(req, res) {
+    let slackInfo = req.body;
+    let teamId = slackInfo.team_id;
+    let channelId = slackInfo.channel_id;
+    Resource.find({
+        teamId: teamId,
+        channelId: channelId
+    }, function (err, resources) {
         if (err)
             res.send(err);
         let response = '';
@@ -67,11 +73,13 @@ function createResource(req, res, params) {
         res.status(200).send('As you wish chief').end();
         var newResource = new Resource({
             name: params.shift(),
+            teamId: slackInfo.team_id,
+            channelId: slackInfo.channel_id,
             createdBy: '<@' + slackInfo.user_id + '>'
         });
 
         newResource.save(function (err, resource) {
-            console.log(resource);
+            // console.log(resource);
             // TODO: erro handling
             var response = {
                 "response_type": "in_channel",
@@ -92,6 +100,8 @@ function removeResource(req, res, params) {
 function checkOut(req, res, params) {
     let slackInfo = req.body;
     let user = '<@' + slackInfo.user_id + '>';
+    let teamId = slackInfo.team_id;
+    let channelId = slackInfo.channel_id;
     if (params.length >= 1) {
         let name = params.shift();
         let comment = '';
@@ -100,7 +110,9 @@ function checkOut(req, res, params) {
         }
         res.status(200).end();
         Resource.findOne({
-            name: name
+            name: name,
+            teamId: teamId,
+            channelId: channelId
         }, function (err, doc) {
             let response = {
                 "text": '',
@@ -161,11 +173,15 @@ function checkIn(req, res, params) {
     if (params.length >= 1) {
         let name = params.shift();
         let user = '<@' + slackInfo.user_id + '>';
+        let teamId = slackInfo.team_id;
+        let channelId = slackInfo.channel_id;
         res.status(200).end();
 
         Resource.findOne({
             name: name,
-            user: user
+            user: user,
+            teamId: teamId,
+            channelId: channelId
         }, function (err, resource) {
             let response = {
                 "text": '',
