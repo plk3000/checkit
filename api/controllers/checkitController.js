@@ -82,7 +82,7 @@ function createResource(req, res, params) {
             sendResponse(slackInfo, response);
 
             let transaction = new Transaction({
-                resourceName: doc.name,
+                resourceName: resource.name,
                 status: 'created',
                 user: '<@' + slackInfo.user_id + '>',
                 comment: comment
@@ -241,7 +241,7 @@ function checkIn(req, res, params) {
                         
 
                     let transaction = new Transaction({
-                        resourceName: doc.name,
+                        resourceName: resource.name,
                         status: 'free',
                         user: '<@' + slackInfo.user_id + '>',
                         comment: comment
