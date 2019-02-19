@@ -14,6 +14,9 @@ exports.handleRequest = function (req, res) {
         case 'add':
             createResource(req, res, params);
             break;
+        case 'remove':
+            removeResource(req, res, params);
+            break;
         case 'list':
             listResources(req, res);
             break;
@@ -56,16 +59,6 @@ function listResources(req, res) {
         });
     });
 };
-/*
-{
-    "text": "It's 80 degrees right now.",
-    "attachments": [
-        {
-            "text":"Partly cloudy today and tomorrow"
-        }
-    ]
-}
-*/
 
 function createResource(req, res, params) {
     let slackInfo = req.body;
@@ -87,6 +80,15 @@ function createResource(req, res, params) {
             }
 
             sendResponse(slackInfo, response);
+
+            let transaction = new Transaction({
+                resourceName: doc.name,
+                status: 'created',
+                user: '<@' + slackInfo.user_id + '>',
+                comment: comment
+            })
+
+            transaction.save();
         });
     } else {
         res.status(200).send('Please check usage boss').end();
@@ -94,7 +96,52 @@ function createResource(req, res, params) {
 };
 
 function removeResource(req, res, params) {
-    
+    let slackInfo = req.body;
+    let user = '<@' + slackInfo.user_id + '>';
+    let teamId = slackInfo.team_id;
+    let channelId = slackInfo.channel_id;
+    if (params.length >= 1) {
+        let name = params.shift();
+        let comment = '';
+        while (params.length > 0) {
+            comment += params.shift() + ' ';
+        }
+        res.status(200).end();
+        Resource.findOneAndDelete({
+            name: name,
+            teamId: teamId,
+            channelId: channelId
+        }, function (err, doc) {
+            let response = {
+                "text": '',
+                "response_type": "ephemeral"
+            };
+            if (err) {
+                response.text = "Ups couldn't do that boss";
+                sendResponse(slackInfo, response);
+            } else {
+
+                response.response_type = 'in_channel'
+                response.text = 'chief ' + user + ' just removed ' + name
+                if (comment != '') {
+                    response.text += ' because ' + comment;
+                }
+
+                sendResponse(slackInfo, response);
+
+                let transaction = new Transaction({
+                    resourceName: doc.name,
+                    status: 'removed',
+                    user: '<@' + slackInfo.user_id + '>',
+                    comment: comment
+                })
+
+                transaction.save();
+            }
+        });
+    } else {
+        res.status(200).send('Please check usage').end();
+    }
 }
 
 function checkOut(req, res, params) {
@@ -154,20 +201,6 @@ function checkOut(req, res, params) {
     }
 }
 
-function sendResponse(slackInfo, response) {
-    Request.post({
-        "headers": {
-            "content-type": "application/json"
-        },
-        "url": slackInfo.response_url,
-        "body": JSON.stringify(response)
-    }, (error, response, body) => {
-        if (error) {
-            return console.dir(error);
-        }
-    });
-}
-
 function checkIn(req, res, params) {
     let slackInfo = req.body;
     if (params.length >= 1) {
@@ -204,6 +237,17 @@ function checkIn(req, res, params) {
                         response.text = user + ' just freed resource ' + resource.name;
                         response.response_type = 'in_channel';
                         sendResponse(slackInfo, response);
+
+                        
+
+                    let transaction = new Transaction({
+                        resourceName: doc.name,
+                        status: 'free',
+                        user: '<@' + slackInfo.user_id + '>',
+                        comment: comment
+                    })
+
+                    transaction.save();
                     } else {
                         response.text = 'something bad happend boss ' + err;
                         sendResponse(slackInfo, response);
@@ -216,16 +260,17 @@ function checkIn(req, res, params) {
     }
 
 }
-// Request.post({
-//     "headers": { "content-type": "application/json" },
-//     "url": "http://httpbin.org/post",
-//     "body": JSON.stringify({
-//         "firstname": "Nic",
-//         "lastname": "Raboy"
-//     })
-// }, (error, response, body) => {
-//     if(error) {
-//         return console.dir(error);
-//     }
-//     console.dir(JSON.parse(body));
-// });
+
+function sendResponse(slackInfo, response) {
+    Request.post({
+        "headers": {
+            "content-type": "application/json"
+        },
+        "url": slackInfo.response_url,
+        "body": JSON.stringify(response)
+    }, (error, response, body) => {
+        if (error) {
+            return console.dir(error);
+        }
+    });
+}
