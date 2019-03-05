@@ -8,7 +8,7 @@ var mongoose = require('mongoose'),
     moment = require('moment');
 
 exports.handleRequest = function (req, res) {
-    let params = req.body.text.replace(/\s{2,}/, ' ').split(' ');
+    let params = req.body.text ? req.body.text.replace(/\s{2,}/, ' ').split(' ') : ['no command'];
     let action = params.shift();
     switch (action) {
         case 'add':
@@ -26,8 +26,16 @@ exports.handleRequest = function (req, res) {
         case 'in':
             checkIn(req, res, params);
             break;
+        case 'help':
         default:
-            res.send('Wrong action your majesty').end();
+            let commands = 'List of commands:\n';
+            commands += '\t* add [resource name with NO spaces] [optional comments]\n'
+            commands += '\t* remove [resource name] [optional comments]\n'
+            commands += '\t* list\n'
+            commands += '\t* out [resource name with NO spaces] [optional comments]\n'
+            commands += '\t* in [resource name with NO spaces] [optional comments]\n'
+            commands += '\t* help\n'
+            res.send(commands).end();
             break;
     }
 }
