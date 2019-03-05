@@ -1,6 +1,6 @@
 {
   "name": "check-it",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "REST api for slack app to manage resources",
   "repository": {
     "type": "git",

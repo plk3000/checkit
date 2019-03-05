@@ -63,12 +63,18 @@ function listResources(req, res) {
 function createResource(req, res, params) {
     let slackInfo = req.body;
     if (params.length >= 1) {
+        let name = params.shift();
+        let comment = '';
+        while (params.length > 0) {
+            comment += params.shift() + ' ';
+        }
         res.status(200).send('As you wish chief').end();
         var newResource = new Resource({
-            name: params.shift(),
+            name: name,
             teamId: slackInfo.team_id,
             channelId: slackInfo.channel_id,
-            createdBy: '<@' + slackInfo.user_id + '>'
+            createdBy: '<@' + slackInfo.user_id + '>',
+            comment: comment
         });
 
         newResource.save(function (err, resource) {
