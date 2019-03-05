@@ -11,7 +11,6 @@ var TransactionSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['free', 'occupied'],
     default: 'free'
   },
   user: String,
