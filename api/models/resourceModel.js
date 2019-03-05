@@ -23,7 +23,8 @@ var ResourceSchema = new Schema({
   createdBy: String,
   user: String,
   checkOutDate: Date,
-  checkOutComment: String
+  checkOutComment: String,
+  comment: String
 });
 
 module.exports = mongoose.model('Resources', ResourceSchema);
